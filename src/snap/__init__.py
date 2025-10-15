@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """
-spectacle - Generate beautiful images of code snippets from the terminal
+snap - Generate beautiful images of code snippets from the terminal
 Uses Playwright (Chromium) for perfect HTML/CSS rendering
 """
 
@@ -87,13 +87,23 @@ HTML_TEMPLATE = """
             box-shadow: 0 20px 68px rgba(0, 0, 0, 0.55);
         }}
         
-        .window-header {{
+        .window-header-chrome {{
             background: {window};
             height: 35px;
             display: flex;
             align-items: center;
             padding-left: 12px;
             gap: 6px;
+        }}
+
+        .window-header-clear {{
+            background: {bg_color};
+            height: 35px;
+            display: flex;
+            align-items: center;
+            padding-left: 12px;
+            gap: 6px;
+            margin-bottom: -0.5em;
         }}
         
         .window-button {{
@@ -166,6 +176,7 @@ async def create_code_image(
     show_line_numbers=True,
     output="code.png",
     show_window=True,
+    show_decorators=True,
     language=None,
     filename=None,
     margin=60,
@@ -224,9 +235,21 @@ async def create_code_image(
     pygments_css = formatter.get_style_defs(".highlight")
 
     # Generate window header HTML
-    if show_window:
+    if show_window and show_decorators:
         window_header = """
-        <div class="window-header">
+        <div class="window-header-chrome">
+            <div class="window-button red"></div>
+            <div class="window-button yellow"></div>
+            <div class="window-button green"></div>
+        </div>
+        """
+    elif show_window and not show_decorators:
+        window_header = """
+        <div class="window-header-chrome"></div>
+        """
+    elif not show_window and show_decorators:
+        window_header = """
+        <div class="window-header-clear">
             <div class="window-button red"></div>
             <div class="window-button yellow"></div>
             <div class="window-button green"></div>
@@ -273,19 +296,19 @@ def main():
         epilog="""
 Examples:
   # From stdin (pipe) - auto-detect language
-  cat script.py | spectacle -o output.png
+  cat script.py | snap -o output.png
   
   # From file - language detected from extension
-  spectacle -f script.py -o output.png
+  snap -f script.py -o output.png
   
   # Explicit language and style
-  echo 'print("hello")' | spectacle -l python -s monokai -o hello.png
+  echo 'print("hello")' | snap -l python -s monokai -o hello.png
   
   # With custom settings
-  cat code.js | spectacle -t dracula --font-size 16 -m 80 -o code.png
+  cat code.js | snap -t dracula --font-size 16 -m 80 -o code.png
   
   # No line numbers or window chrome
-  spectacle -f code.py --no-line-numbers --no-window -o code.png
+  snap -f code.py --no-line-numbers --no-chrome -o code.png
   
   # List all available styles
   python -c "from pygments.styles import get_all_styles; print('\\n'.join(sorted(get_all_styles())))"
@@ -339,7 +362,10 @@ Installation:
     parser.add_argument(
         "--no-line-numbers", action="store_true", help="Hide line numbers"
     )
-    parser.add_argument("--no-window", action="store_true", help="Hide window chrome")
+    parser.add_argument("--no-chrome", action="store_true", help="Hide window chrome")
+    parser.add_argument(
+        "--no-decorators", action="store_true", help="Hide window decorators"
+    )
 
     args = parser.parse_args()
 
@@ -350,7 +376,7 @@ Installation:
         for style in sorted(get_all_styles()):
             print(f"  {style}")
         print()
-        print("Usage: spectacle -t <style> -f <file> -o <output>")
+        print("Usage: snap -t <style> -f <file> -o <output>")
         sys.exit(0)
 
     # Read code from file or stdin
@@ -367,7 +393,7 @@ Installation:
                 "Error: No input provided. Use -f for file input or pipe content via stdin.",
                 file=sys.stderr,
             )
-            print("Try 'spectacle --help' for more information.", file=sys.stderr)
+            print("Try 'snap --help' for more information.", file=sys.stderr)
             sys.exit(1)
         code = sys.stdin.read()
 
@@ -386,7 +412,8 @@ Installation:
                 margin=args.margin,
                 show_line_numbers=not args.no_line_numbers,
                 output=args.output,
-                show_window=not args.no_window,
+                show_window=not args.no_chrome,
+                show_decorators=not args.no_decorators,
                 language=args.language,
                 filename=args.file,
             )
