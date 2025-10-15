@@ -1,0 +1,23 @@
+[project]
+name = "snap"
+version = "1.0.0"
+description = ""
+authors = [
+    {name = "hl-valdemar",email = "valdemar.lorenzen@gmail.com"}
+]
+readme = "README.md"
+requires-python = ">=3.13"
+dependencies = [
+    "playwright (>=1.55.0,<2.0.0)",
+    "pygments (>=2.19.2,<3.0.0)"
+]
+
+[tool.poetry]
+packages = [{include = "snap", from = "src"}]
+
+[tool.poetry.scripts]
+snap = "snap:main"
+
+[build-system]
+requires = ["poetry-core>=2.0.0,<3.0.0"]
+build-backend = "poetry.core.masonry.api"
