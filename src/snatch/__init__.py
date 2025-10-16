@@ -541,7 +541,7 @@ Examples:
   # List all available themes
   snatch --list-themes
 
-Popular themes: monokai, dracula, github-dark, nord, solarized-dark, 
+Popular themes: monokai, dracula, github-dark, nord, solarized-dark,
                 one-dark, material, gruvbox-dark, zenburn, paraiso-dark
 
 Installation:
@@ -610,7 +610,7 @@ Installation:
         for style in get_all_styles_with_custom():
             print(f"  {style}")
         print()
-        print("Usage: snatch -t <theme> -f <file> -o <output>")
+        print("Usage: snatch -t <theme> -f <file> [-o <output> | -c]")
         sys.exit(0)
 
     # Read code from file or stdin
