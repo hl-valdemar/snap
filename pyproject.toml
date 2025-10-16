@@ -1,6 +1,6 @@
 [project]
-name = "snap"
-version = "1.0.0"
+name = "snatch"
+version = "1.0.1"
 description = ""
 authors = [
     {name = "hl-valdemar",email = "valdemar.lorenzen@gmail.com"}
@@ -13,10 +13,10 @@ dependencies = [
 ]
 
 [tool.poetry]
-packages = [{include = "snap", from = "src"}]
+packages = [{include = "snatch", from = "src"}]
 
 [tool.poetry.scripts]
-snap = "snap:main"
+snatch = "snatch:main"
 
 [build-system]
 requires = ["poetry-core>=2.0.0,<3.0.0"]

@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """
-snap - Generate presentable images of code snippets from the terminal
+snatch - Generate presentable images of code snippets from the terminal
 Uses Playwright (Chromium) for perfect HTML/CSS rendering
 """
 
@@ -176,7 +176,7 @@ async def create_code_image(
     show_line_numbers=True,
     output="code.png",
     show_window=True,
-    show_decorators=True,
+    show_decorations=True,
     language=None,
     filename=None,
     margin=60,
@@ -235,7 +235,7 @@ async def create_code_image(
     pygments_css = formatter.get_style_defs(".highlight")
 
     # Generate window header HTML
-    if show_window and show_decorators:
+    if show_window and show_decorations:
         window_header = """
         <div class="window-header-chrome">
             <div class="window-button red"></div>
@@ -243,11 +243,11 @@ async def create_code_image(
             <div class="window-button green"></div>
         </div>
         """
-    elif show_window and not show_decorators:
+    elif show_window and not show_decorations:
         window_header = """
         <div class="window-header-chrome"></div>
         """
-    elif not show_window and show_decorators:
+    elif not show_window and show_decorations:
         window_header = """
         <div class="window-header-clear">
             <div class="window-button red"></div>
@@ -296,24 +296,24 @@ def main():
         epilog="""
 Examples:
   # From stdin (pipe) - auto-detect language
-  cat script.py | snap -o output.png
+  cat script.py | snatch -o output.png
   
   # From file - language detected from extension
-  snap -f script.py -o output.png
+  snatch -f script.py -o output.png
   
-  # Explicit language and style
-  echo 'print("hello")' | snap -l python -s monokai -o hello.png
+  # Explicit language and theme
+  echo 'print("hello")' | snatch -l python -t monokai -o hello.png
   
   # With custom settings
-  cat code.js | snap -t dracula --font-size 16 -m 80 -o code.png
+  cat code.js | snatch -t dracula --font-size 16 -m 80 -o code.png
   
   # No line numbers or window chrome
-  snap -f code.py --no-line-numbers --no-chrome -o code.png
+  snatch -f code.py --no-line-numbers --no-chrome -o code.png
   
-  # List all available styles
-  python -c "from pygments.styles import get_all_styles; print('\\n'.join(sorted(get_all_styles())))"
+  # List all available themes
+  snatch --list-themes
 
-Popular styles: monokai, dracula, github-dark, nord, solarized-dark, 
+Popular themes: monokai, dracula, github-dark, nord, solarized-dark, 
                 one-dark, material, gruvbox-dark, zenburn, paraiso-dark
 
 Installation:
@@ -333,14 +333,14 @@ Installation:
     )
     parser.add_argument(
         "-t",
-        "--style",
+        "--theme",
         default="monokai",
-        help="Pygments style name (default: monokai). Use any Pygments style.",
+        help="Pygments theme name (default: monokai). Use any Pygments style.",
     )
     parser.add_argument(
-        "--list-styles",
+        "--list-themes",
         action="store_true",
-        help="List all available Pygments styles and exit",
+        help="List all available Pygments themes and exit",
     )
     parser.add_argument(
         "--font-size", type=int, default=12, help="Font size in pixels (default: 12)"
@@ -364,19 +364,19 @@ Installation:
     )
     parser.add_argument("--no-chrome", action="store_true", help="Hide window chrome")
     parser.add_argument(
-        "--no-decorators", action="store_true", help="Hide window decorators"
+        "--no-decorations", action="store_true", help="Hide window deocrations"
     )
 
     args = parser.parse_args()
 
     # Handle --list-styles
-    if args.list_styles:
+    if args.list_themes:
         print("Available Pygments styles:")
         print()
         for style in sorted(get_all_styles()):
             print(f"  {style}")
         print()
-        print("Usage: snap -t <style> -f <file> -o <output>")
+        print("Usage: snatch -t <theme> -f <file> -o <output>")
         sys.exit(0)
 
     # Read code from file or stdin
@@ -393,7 +393,7 @@ Installation:
                 "Error: No input provided. Use -f for file input or pipe content via stdin.",
                 file=sys.stderr,
             )
-            print("Try 'snap --help' for more information.", file=sys.stderr)
+            print("Try 'snatch --help' for more information.", file=sys.stderr)
             sys.exit(1)
         code = sys.stdin.read()
 
@@ -406,14 +406,14 @@ Installation:
         asyncio.run(
             create_code_image(
                 code=code,
-                style=args.style,
+                style=args.theme,
                 font_size=args.font_size,
                 padding=args.padding,
                 margin=args.margin,
                 show_line_numbers=not args.no_line_numbers,
                 output=args.output,
                 show_window=not args.no_chrome,
-                show_decorators=not args.no_decorators,
+                show_decorations=not args.no_decorations,
                 language=args.language,
                 filename=args.file,
             )
