@@ -435,8 +435,8 @@ async def create_code_image(
 
     # Derive window chrome and gradient colors from background
     window_color = lighten_color(bg_color, 0.15)
-    gradient_start = lighten_color(bg_color, 0.1)
-    gradient_end = darken_color(bg_color, 0.2)
+    gradient_start = lighten_color(bg_color, 0.0)
+    gradient_end = darken_color(bg_color, 0.3)
 
     # Generate highlighted HTML
     formatter = HtmlFormatter(
