@@ -65,10 +65,14 @@ Popular themes: monokai, dracula, github-dark, nord, solarized-dark,
 **Installation**:
 
 ```bash
+# clone and navigate to repo
 git clone https://github.com/hl-valdemar/snatch
 cd snatch
+
+# install the dependencies
 poetry install
+poetry run playwright install chromium
+
+# build and install the program
 pipx install .
 ```
-
-Note: requires `poetry` and `pipx`.
