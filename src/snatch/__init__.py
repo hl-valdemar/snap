@@ -36,6 +36,110 @@ except ImportError:
     HAS_PYPERCLIPIMG = False
 
 
+from pygments.style import Style
+from pygments.token import (
+    Comment,
+    Error,
+    Keyword,
+    Name,
+    Number,
+    Operator,
+    String,
+    Generic,
+    Literal,
+    Text,
+    Whitespace,
+    Token,
+)
+
+
+class MiasmaStyle(Style):
+    """
+    Miasma color scheme - a fog descends upon your editor
+    https://github.com/xero/miasma.nvim
+    """
+
+    background_color = "#222222"
+    default_style = ""
+
+    styles = {
+        # Base
+        Token: "#d7c483",
+        Text: "#d7c483",
+        Whitespace: "#666666",
+        Error: "#c2c2b0 bg:#bb7744",
+        # Comments
+        Comment: "#666666",
+        Comment.Preproc: "#5f875f",
+        Comment.PreprocFile: "#685742",
+        # Keywords
+        Keyword: "#5f875f bold",
+        Keyword.Constant: "#78824b",
+        Keyword.Type: "#78834b bold",
+        # Names
+        Name: "#d7c483",
+        Name.Attribute: "#5f875f",
+        Name.Builtin: "#bb7744",
+        Name.Builtin.Pseudo: "#bb7744",
+        Name.Class: "#78834b bold",
+        Name.Constant: "#bb7744",
+        Name.Decorator: "#bb7744",
+        Name.Entity: "#78834b",
+        Name.Exception: "#b36d43",
+        Name.Function: "#78834b",
+        Name.Function.Magic: "#bb7744",
+        Name.Label: "#5f875f",
+        Name.Namespace: "#d7c483",
+        Name.Tag: "#5f875f",
+        Name.Variable: "#d7c483",
+        Name.Variable.Instance: "#b36d43",
+        # Literals
+        Literal: "#bb7744",
+        String: "#685742",
+        String.Char: "#685742",
+        String.Doc: "#666666",
+        String.Escape: "#bb7744",
+        String.Interpol: "#c9a554",
+        Number: "#78824b",
+        Number.Float: "#78824b",
+        Number.Hex: "#78824b",
+        Number.Integer: "#78824b",
+        Number.Oct: "#78824b",
+        # Operators
+        Operator: "#d7c483",
+        Operator.Word: "#5f875f bold",
+        # Generics (diffs, etc)
+        Generic.Deleted: "#b36d43",
+        Generic.Emph: "underline",
+        Generic.Error: "#b36d43",
+        Generic.Heading: "#d7c483 bold",
+        Generic.Inserted: "#5f875f",
+        Generic.Output: "#666666",
+        Generic.Prompt: "#78824b",
+        Generic.Strong: "bold",
+        Generic.Subheading: "#d7c483",
+        Generic.Traceback: "#b36d43",
+    }
+
+
+# Register custom styles
+CUSTOM_STYLES = {"miasma": MiasmaStyle}
+
+
+def get_style_by_name_with_custom(name):
+    """Get a Pygments style by name, including custom styles"""
+    if name.lower() in CUSTOM_STYLES:
+        return CUSTOM_STYLES[name.lower()]
+    return get_style_by_name(name)
+
+
+def get_all_styles_with_custom():
+    """Get all available styles, including custom ones"""
+    pygments_styles = list(get_all_styles())
+    custom_style_names = list(CUSTOM_STYLES.keys())
+    return sorted(pygments_styles + custom_style_names)
+
+
 def copy_to_clipboard(image_data):
     """Copy image to clipboard (cross-platform)
 
@@ -318,7 +422,7 @@ async def create_code_image(
 
     # Get Pygments style and extract background color
     try:
-        pygments_style_obj = get_style_by_name(style)
+        pygments_style_obj = get_style_by_name_with_custom(style)
     except:
         print(
             f"Warning: Unknown style '{style}', falling back to 'monokai'",
@@ -336,7 +440,7 @@ async def create_code_image(
 
     # Generate highlighted HTML
     formatter = HtmlFormatter(
-        style=style,
+        style=pygments_style_obj,
         linenos="table" if show_line_numbers else False,
         cssclass="highlight",
         noclasses=False,
@@ -419,6 +523,12 @@ Examples:
   # From file - language detected from extension
   snatch -f script.py -o output.png
   
+  # To clipboard - no write to file
+  snatch -f script.py -c
+
+  # To clipboard - also write to file
+  snatch -f script.py -c -o output.png
+
   # Explicit language and theme
   echo 'print("hello")' | snatch -l python -t monokai -o hello.png
   
@@ -497,7 +607,7 @@ Installation:
     if args.list_themes:
         print("Available Pygments styles:")
         print()
-        for style in sorted(get_all_styles()):
+        for style in get_all_styles_with_custom():
             print(f"  {style}")
         print()
         print("Usage: snatch -t <theme> -f <file> -o <output>")
