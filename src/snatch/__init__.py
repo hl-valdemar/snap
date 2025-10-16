@@ -28,6 +28,116 @@ except ImportError:
     sys.exit(1)
 
 
+try:
+    import pyperclipimg
+
+    HAS_PYPERCLIPIMG = True
+except ImportError:
+    HAS_PYPERCLIPIMG = False
+
+
+def copy_to_clipboard(image_data):
+    """Copy image to clipboard (cross-platform)
+
+    Args:
+        image_data: Either a file path (str) or image bytes (bytes)
+    """
+    import platform
+    import subprocess
+    import os
+    import tempfile
+
+    is_bytes = isinstance(image_data, bytes)
+
+    # Try pyperclipimg first if available
+    if HAS_PYPERCLIPIMG:
+        try:
+            if is_bytes:
+                # Write to temporary file for pyperclipimg
+                with tempfile.NamedTemporaryFile(suffix=".png", delete=False) as tmp:
+                    tmp.write(image_data)
+                    tmp_path = tmp.name
+                try:
+                    pyperclipimg.copy(tmp_path)
+                    return True
+                finally:
+                    os.unlink(tmp_path)
+            else:
+                pyperclipimg.copy(image_data)
+                return True
+        except Exception as e:
+            print(f"pyperclipimg failed: {e}, trying fallback...", file=sys.stderr)
+
+    # Fallback to platform-specific commands
+    system = platform.system()
+
+    # For bytes, we need to write to a temp file for most methods
+    temp_file_created = False
+    if is_bytes:
+        with tempfile.NamedTemporaryFile(suffix=".png", delete=False) as tmp:
+            tmp.write(image_data)
+            image_path = tmp.name
+            temp_file_created = True
+    else:
+        image_path = os.path.abspath(image_data)
+
+    try:
+        if system == "Darwin":  # macOS
+            subprocess.run(
+                [
+                    "osascript",
+                    "-e",
+                    f'set the clipboard to (read (POSIX file "{image_path}") as «class PNGf»)',
+                ],
+                check=True,
+            )
+        elif system == "Linux":
+            # xclip can read from stdin, which is perfect for bytes
+            if is_bytes:
+                process = subprocess.Popen(
+                    ["xclip", "-selection", "clipboard", "-t", "image/png", "-i"],
+                    stdin=subprocess.PIPE,
+                )
+                process.communicate(input=image_data)
+                if process.returncode != 0:
+                    raise subprocess.CalledProcessError(process.returncode, "xclip")
+            else:
+                subprocess.run(
+                    [
+                        "xclip",
+                        "-selection",
+                        "clipboard",
+                        "-t",
+                        "image/png",
+                        "-i",
+                        image_path,
+                    ],
+                    check=True,
+                )
+        elif system == "Windows":
+            ps_script = f"""
+            Add-Type -AssemblyName System.Windows.Forms
+            Add-Type -AssemblyName System.Drawing
+            $img = [System.Drawing.Image]::FromFile('{image_path}')
+            [System.Windows.Forms.Clipboard]::SetImage($img)
+            $img.Dispose()
+            """
+            subprocess.run(["powershell", "-Command", ps_script], check=True)
+        else:
+            return False
+        return True
+    except (subprocess.CalledProcessError, FileNotFoundError) as e:
+        print(f"Clipboard error: {e}", file=sys.stderr)
+        return False
+    finally:
+        # Clean up temp file if we created one
+        if temp_file_created:
+            try:
+                os.unlink(image_path)
+            except:
+                pass
+
+
 def lighten_color(hex_color, amount=0.2):
     """Lighten a hex color by a given amount"""
     # Remove '#' if present
@@ -174,7 +284,7 @@ async def create_code_image(
     font_size=14,
     padding=40,
     show_line_numbers=True,
-    output="code.png",
+    output=None,  # Changed to None
     show_window=True,
     show_decorations=True,
     language=None,
@@ -282,11 +392,19 @@ async def create_code_image(
 
         # Get the element and take a screenshot
         element = await page.query_selector("body")
-        await element.screenshot(path=output)
+
+        if output:
+            # Save to file
+            await element.screenshot(path=output)
+            print(f"Image saved to {output}")
+            screenshot_bytes = None
+        else:
+            # Return bytes for clipboard
+            screenshot_bytes = await element.screenshot()
 
         await browser.close()
 
-    print(f"Image saved to {output}")
+    return screenshot_bytes
 
 
 def main():
@@ -324,7 +442,7 @@ Installation:
 
     parser.add_argument("-f", "--file", help="Input file (if not using stdin)")
     parser.add_argument(
-        "-o", "--output", default="code.png", help="Output file (default: code.png)"
+        "-o", "--output", help="Output file (optional, saves to file if specified)"
     )
     parser.add_argument(
         "-l",
@@ -358,6 +476,12 @@ Installation:
         type=int,
         default=40,
         help="Margin around window in pixels (default: 40)",
+    )
+    parser.add_argument(
+        "-c",
+        "--clipboard",
+        action="store_true",
+        help="Copy image to clipboard after generation",
     )
     parser.add_argument(
         "--no-line-numbers", action="store_true", help="Hide line numbers"
@@ -401,9 +525,17 @@ Installation:
         print("Error: Input is empty", file=sys.stderr)
         sys.exit(1)
 
+    # Validate that at least one output method is specified
+    if not args.output and not args.clipboard:
+        print(
+            "Error: Must specify at least one output method: -o (file) or -c (clipboard)",
+            file=sys.stderr,
+        )
+        sys.exit(1)
+
     # Generate image
     try:
-        asyncio.run(
+        screenshot_bytes = asyncio.run(
             create_code_image(
                 code=code,
                 style=args.theme,
@@ -411,13 +543,24 @@ Installation:
                 padding=args.padding,
                 margin=args.margin,
                 show_line_numbers=not args.no_line_numbers,
-                output=args.output,
+                output=args.output,  # Will be None if not specified
                 show_window=not args.no_chrome,
                 show_decorations=not args.no_decorations,
                 language=args.language,
                 filename=args.file,
             )
         )
+        # Copy to clipboard if requested
+        if args.clipboard:
+            image_data = screenshot_bytes if screenshot_bytes else args.output
+            if copy_to_clipboard(image_data):
+                print("Image copied to clipboard")
+            else:
+                print(
+                    "Warning: Could not copy to clipboard. Install pyperclipimg or required system tools.",
+                    file=sys.stderr,
+                )
+
     except Exception as e:
         print(f"Error generating image: {e}", file=sys.stderr)
         print("\nMake sure Playwright and Chromium are installed:", file=sys.stderr)
