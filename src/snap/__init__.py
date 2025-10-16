@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """
-snap - Generate beautiful images of code snippets from the terminal
+snap - Generate presentable images of code snippets from the terminal
 Uses Playwright (Chromium) for perfect HTML/CSS rendering
 """
 
@@ -291,7 +291,7 @@ async def create_code_image(
 
 def main():
     parser = argparse.ArgumentParser(
-        description="Generate beautiful images of code snippets",
+        description="Generate presentable images of code snippets",
         formatter_class=argparse.RawDescriptionHelpFormatter,
         epilog="""
 Examples:
