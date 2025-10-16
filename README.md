@@ -61,3 +61,14 @@ Examples:
 Popular themes: monokai, dracula, github-dark, nord, solarized-dark,
                 one-dark, material, gruvbox-dark, zenburn, paraiso-dark
 ```
+
+**Installation**:
+
+```bash
+git clone https://github.com/hl-valdemar/snatch
+cd snatch
+poetry install
+pipx install .
+```
+
+Note: requires `poetry` and `pipx`.
