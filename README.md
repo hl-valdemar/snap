@@ -1,12 +1,10 @@
 # SNATCH ✨
 
 Generate presentable code images from the command line.
-For help, run `snatch --help`.
-For your pleasure, some samples:
 
 ![miasma theme](samples/miasma.png "Miasma")
-![coffee theme](samples/coffee.png "Coffee")
-![monokai theme](samples/monokai.png "Monokai")
+
+**Commands**:
 
 ```bash
 λ snatch --help
