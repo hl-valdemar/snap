@@ -1,6 +1,6 @@
 [project]
 name = "snatch"
-version = "1.0.1"
+version = "1.1.0"
 description = ""
 authors = [
     {name = "hl-valdemar",email = "valdemar.lorenzen@gmail.com"}
