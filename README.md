@@ -1,6 +1,6 @@
 # SNATCH ✨
 
-Generate presentable code images from the command line.
+Generate presentable code from the command line.
 
 ![miasma theme](samples/miasma.png "Miasma")
 
