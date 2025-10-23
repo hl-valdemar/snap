@@ -333,7 +333,7 @@ HTML_TEMPLATE = """
         .code-container {{
             background: {bg_color};
             padding: {padding}px;
-            font-family: 'Monaco', 'Menlo', 'Ubuntu Mono', 'Consolas', 'Courier New', monospace;
+            font-family: 'Menlo', 'Monaco', 'Ubuntu Mono', 'Consolas', 'Courier New', monospace;
             font-size: {font_size}px;
             line-height: 1.5;
             overflow-x: auto;
