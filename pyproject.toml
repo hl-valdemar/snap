@@ -1,25 +1,19 @@
 [project]
 name = "snatch"
 version = "1.1.0"
-description = ""
-authors = [
-    {name = "hl-valdemar",email = "valdemar.lorenzen@gmail.com"}
-]
+description = "Generate presentable images of code snippets from the terminal"
+authors = [{name = "hl-valdemar", email = "valdemar.lorenzen@gmail.com"}]
 readme = "README.md"
-requires-python = ">=3.13,<4.0"
+requires-python = ">=3.13"
 dependencies = [
-    "playwright (>=1.55.0,<2.0.0)",
-    "pygments (>=2.19.2,<3.0.0)",
-    "pyperclipimg (>=0.2.0,<0.3.0)",
+    "playwright>=1.55.0",
+    "pygments>=2.19.2",
+    "pyperclipimg>=0.2.0",
 ]
 
-[tool.poetry]
-packages = [{include = "snatch", from = "src"}]
-include = [{path = "src/snatch/fonts/*.ttf"}]
-
-[tool.poetry.scripts]
+[project.scripts]
 snatch = "snatch:main"
 
 [build-system]
-requires = ["poetry-core>=2.0.0,<3.0.0"]
-build-backend = "poetry.core.masonry.api"
+requires = ["hatchling"]
+build-backend = "hatchling.build"
