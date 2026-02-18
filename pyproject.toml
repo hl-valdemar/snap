@@ -15,6 +15,7 @@ dependencies = [
 
 [tool.poetry]
 packages = [{include = "snatch", from = "src"}]
+include = [{path = "src/snatch/fonts/*.ttf"}]
 
 [tool.poetry.scripts]
 snatch = "snatch:main"

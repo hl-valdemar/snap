@@ -36,6 +36,14 @@ except ImportError:
     HAS_PYPERCLIPIMG = False
 
 
+import base64
+from pathlib import Path
+
+# Load bundled Menlo font as base64 for embedding in HTML
+_FONTS_DIR = Path(__file__).parent / "fonts"
+_MENLO_REGULAR_B64 = base64.b64encode((_FONTS_DIR / "Menlo-Regular.ttf").read_bytes()).decode()
+_MENLO_BOLD_B64 = base64.b64encode((_FONTS_DIR / "Menlo-Bold.ttf").read_bytes()).decode()
+
 from pygments.style import Style
 from pygments.token import (
     Comment,
@@ -280,6 +288,17 @@ HTML_TEMPLATE = """
 <head>
     <meta charset="UTF-8">
     <style>
+        @font-face {{
+            font-family: 'SnatchMenlo';
+            font-weight: normal;
+            src: url(data:font/truetype;base64,{menlo_regular_b64}) format('truetype');
+        }}
+        @font-face {{
+            font-family: 'SnatchMenlo';
+            font-weight: bold;
+            src: url(data:font/truetype;base64,{menlo_bold_b64}) format('truetype');
+        }}
+
         * {{
             margin: 0;
             padding: 0;
@@ -333,7 +352,7 @@ HTML_TEMPLATE = """
         .code-container {{
             background: {bg_color};
             padding: {padding}px;
-            font-family: 'Menlo', 'Monaco', 'Ubuntu Mono', 'Consolas', 'Courier New', monospace;
+            font-family: 'SnatchMenlo', monospace;
             font-size: {font_size}px;
             line-height: 1.5;
             overflow-x: auto;
@@ -349,6 +368,7 @@ HTML_TEMPLATE = """
         .highlight pre {{
             margin: 0;
             padding: 0;
+            font-family: inherit;
         }}
         
         /* Aggressively override ALL backgrounds to match */
@@ -484,6 +504,8 @@ async def create_code_image(
         window_header=window_header,
         highlighted_code=highlighted_code,
         pygments_css=pygments_css,
+        menlo_regular_b64=_MENLO_REGULAR_B64,
+        menlo_bold_b64=_MENLO_BOLD_B64,
     )
 
     # Use Playwright to render HTML to image
